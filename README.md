@@ -37,16 +37,16 @@ sudo apt install build-essential cmake git pkg-config libeigen3-dev \
 
 ## Build the needed Chrono libraries
 
-This uses a separate folder under your home directory. You do not need CUDA
-or a discrete GPU for the soil mechanics. The animation needs a working desktop
+Run these commands from this repository's root directory. Chrono's sources and
+libraries stay in the ignored `.chrono/` directory. You do not need CUDA or a
+discrete GPU for the soil mechanics. The animation needs a working desktop
 graphics environment.
 
 ```bash
-mkdir -p "$HOME/chrono-wheel-work"
-cd "$HOME/chrono-wheel-work"
-git clone --depth 1 --branch 10.0.0 https://github.com/projectchrono/chrono.git
+mkdir -p .chrono
+git clone --depth 1 --branch 10.0.0 https://github.com/projectchrono/chrono.git .chrono/chrono
 
-cmake -S chrono -B chrono-build \
+cmake -S .chrono/chrono -B .chrono/chrono-build \
     -DCMAKE_BUILD_TYPE=Release \
     -DCH_ENABLE_MODULE_VEHICLE=ON \
     -DCH_ENABLE_MODULE_IRRLICHT=ON \
@@ -54,7 +54,7 @@ cmake -S chrono -B chrono-build \
     -DBUILD_DEMOS=OFF \
     -DBUILD_TESTING=OFF
 
-cmake --build chrono-build --target Chrono_vehicle Chrono_irrlicht -j 4
+cmake --build .chrono/chrono-build --target Chrono_vehicle Chrono_irrlicht -j 4
 ```
 
 Keep `-j 4` for a modest memory footprint. This builds Chrono's core, vehicle
@@ -74,15 +74,13 @@ use the library path returned by `dpkg -L libirrlicht-dev`.
 
 ## Build and run this simulation
 
-Extract this project's ZIP into `~/chrono-wheel-work/` so that
-`~/chrono-wheel-work/chrono_single_wheel/main.cpp` exists. Then:
+The simulation's CMake project and `main.cpp` are in `src/`. From the repository
+root, configure and build it against the local Chrono build:
 
 ```bash
-cd "$HOME/chrono-wheel-work/chrono_single_wheel"
-
-cmake -S . -B build \
+cmake -S src -B build \
     -DCMAKE_BUILD_TYPE=Release \
-    -DChrono_DIR="$HOME/chrono-wheel-work/chrono-build/cmake"
+    -DChrono_DIR="$PWD/.chrono/chrono-build/cmake"
 
 cmake --build build -j 4
 ./build/single_wheel
@@ -108,7 +106,7 @@ this project with `-DWHEEL_GUI=OFF`. Only Chrono's Vehicle module is then requir
 
 ## Where to change the first simulation
 
-Open `main.cpp`. The wheel size, mass, speed, duration and grid spacing are
+Open `src/main.cpp`. The wheel size, mass, speed, duration and grid spacing are
 together near the beginning. The uniform soil parameters appear in the
 `terrain.SetSoilParameters(...)` call below the motor setup.
 
@@ -116,9 +114,9 @@ Keep the initial values for your first run. Success means the wheel moves
 forward and the passed ground remains below its original height. The forward
 speed is a simulation result; it is not forced to equal radius times axle speed.
 
-The initial ten-second headless run was checked with Chrono 10.0.0: the wheel
-travelled about 2.63 m, and the largest sampled rut depth behind it was about 0.177 m.
-The desktop animation requires a graphics display.
+A ten-second headless run with Chrono 10.0.0 on Ubuntu 24.04 (GCC 13.3) completed
+successfully: the wheel travelled 2.6255 m, and the largest sampled rut depth
+behind it was 0.1843 m. The desktop animation requires a graphics display.
 
 ## Sources
 
