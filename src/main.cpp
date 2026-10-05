@@ -15,6 +15,7 @@
 #include "chrono/physics/ChLinkMotorRotationAngle.h"
 #include "chrono/physics/ChSystemSMC.h"
 #include "chrono_vehicle/terrain/SCMTerrain.h"
+#include "wheel_paths.h"
 
 #ifdef WHEEL_GUI
 #include "chrono_irrlicht/ChVisualSystemIrrlicht.h"
@@ -23,9 +24,6 @@
 using namespace chrono;
 
 int main(int argc, char* argv[]) {
-#ifdef CHRONO_DATA_DIR
-    SetChronoDataPath(CHRONO_DATA_DIR);
-#endif
     bool headless = false;
     if (argc == 2 && std::string(argv[1]) == "--headless") {
         headless = true;
@@ -35,6 +33,24 @@ int main(int argc, char* argv[]) {
     }
 #ifndef WHEEL_GUI
     headless = true;
+#endif
+    const std::filesystem::path data_dir(WHEEL_CHRONO_DATA_DIR);
+    const auto colormap = data_dir / "colormaps" / "jet-table-float-0512.csv";
+    if (!std::filesystem::is_regular_file(colormap)) {
+        std::cerr << "Missing Chrono colormap: " << colormap << '\n';
+        return 2;
+    }
+    // Chrono's GetChronoDataFile concatenates strings, so retain the final slash.
+    SetChronoDataPath(data_dir.generic_string() + "/");
+#ifdef WHEEL_GUI
+    if (!headless) {
+        for (const auto* asset : {"fonts/jetbrainmono6_bold.png", "fonts/arial8.xml", "fonts/arial80.bmp"}) {
+            if (!std::filesystem::is_regular_file(data_dir / asset)) {
+                std::cerr << "Missing Chrono visualization asset: " << (data_dir / asset) << '\n';
+                return 2;
+            }
+        }
+    }
 #endif
 
     // Change only these values when experimenting with the first simulation.
@@ -97,8 +113,10 @@ int main(int argc, char* argv[]) {
 
     // A snapshot at completion also allows inspection without a GUI.
     auto save_result = [&]() {
-        std::filesystem::create_directories("output");
-        terrain.WriteMesh("output/soil_after.obj");
+        const std::filesystem::path output_dir("output");
+        const auto mesh_path = output_dir / "soil_after.obj";
+        std::filesystem::create_directories(output_dir);
+        terrain.WriteMesh(mesh_path.string());
         double max_rut = 0;
         const double passed_end = wheel->GetPos().x() - radius - 0.10;
         for (double x = start_x + radius; x < passed_end; x += grid_spacing) {
@@ -111,7 +129,7 @@ int main(int argc, char* argv[]) {
                   << "Forward travel: " << wheel->GetPos().x() - start_x << " m\n"
                   << "Wheel centre height: " << wheel->GetPos().z() << " m\n"
                   << "Largest rut depth along the passed centreline: " << max_rut << " m\n"
-                  << "Saved output/soil_after.obj\n";
+                  << "Saved " << mesh_path.generic_string() << '\n';
     };
 
     const int total_steps = static_cast<int>(std::lround(duration / step));

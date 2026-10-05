@@ -1,0 +1,4 @@
+#pragma once
+
+// Generated locally by CMake; no machine-specific paths are tracked in Git.
+#define WHEEL_CHRONO_DATA_DIR R"wheel(@WHEEL_CHRONO_DATA_DIR@)wheel"
