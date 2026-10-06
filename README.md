@@ -5,10 +5,11 @@ One C++ source and one shared `src/CMakeLists.txt` build on macOS and Linux with
 use Irrlicht; `WHEEL_GUI=OFF` builds require only Chrono core, Vehicle, and Eigen.
 Only macOS GUI builds produce `single_wheel.app`.
 
-The wheel is a rigid cylinder. Its axle is guided straight, but forward and
-vertical positions remain free. A motor prescribes axle rotation; soil traction
-determines forward motion, and gravity supplies the wheel load. The guide
-prevents lateral movement and tipping. The physics and numerical parameters
+The wheel is a rigid cylinder. A motor prescribes axle rotation and prevents
+tipping; soil traction determines forward motion, and gravity supplies the
+wheel load. Chrono 10.0.0's `OLDHAM` setting leaves all three translations free,
+including lateral movement. The straight track relies on the symmetric setup,
+rather than an explicit lateral guide. The physics and numerical parameters
 are shared unchanged between platforms and between GUI and headless runs.
 
 | Setting | Value |
@@ -313,8 +314,9 @@ Passed on this Mac:
   `.logs/gui-mac.log` contains no missing-library or missing-asset error.
 - Checked failure handling: unfinished required Chrono libraries were rejected,
   and a GUI configuration using the font-free data directory failed with an
-  explicit missing-font error. Physics setup and the simulation loop remain
-  byte-for-byte identical to the original source. `git diff --check` and the
+  explicit missing-font error. Executable physics setup and the simulation loop
+  remain unchanged from the original source; the `OLDHAM` comment was corrected
+  to describe its free lateral translation accurately. `git diff --check` and the
   build script's Bash syntax check passed.
 
 **Linux was not available in this session.** Ubuntu package discovery, native

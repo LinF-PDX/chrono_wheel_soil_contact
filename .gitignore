@@ -1,0 +1,25 @@
+# Machine-specific dependency settings and editor configuration.
+.vscode/
+.local/
+CMakeUserPresets.json
+.env
+
+# Dependency trees, CMake builds, application bundles, logs, and results.
+.chrono/
+chrono/
+build/
+build-*/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+single_wheel
+*.app/
+*.o
+*.a
+*.so
+*.so.*
+*.dylib
+*.log
+output/
+.logs/
+.DS_Store

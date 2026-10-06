@@ -83,9 +83,9 @@ int main(int argc, char* argv[]) {
     wheel->GetVisualShape(0)->SetColor(ChColor(0.25f, 0.25f, 0.25f));
     system.AddBody(wheel);
 
-    // As in Chrono's single-wheel example, OLDHAM lets the wheel translate in
-    // the plane perpendicular to the axle: X travel and Z sinkage remain free.
-    // Lateral motion and tipping are constrained. The motor only drives spin.
+    // Chrono 10.0.0's OLDHAM leaves all translations free, including lateral Y.
+    // It prevents tipping; the angle motor prescribes spin about the Y axle.
+    // Straight travel here relies on the symmetric geometry and soil setup.
     auto motor = chrono_types::make_shared<ChLinkMotorRotationAngle>();
     motor->SetSpindleConstraint(ChLinkMotorRotation::SpindleConstraint::OLDHAM);
     motor->Initialize(wheel, reference,
