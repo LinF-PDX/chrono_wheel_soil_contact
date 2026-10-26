@@ -269,7 +269,25 @@ builds need the colormap but do not need fonts, Irrlicht, or a display.
 The soil is colored by downward deformation, from 0 to 0.25 m. After ten
 simulated seconds physics stops, the deformed mesh is saved, and the GUI stays
 open for inspection. Close the window to exit. Output paths use
-`std::filesystem`; the OBJ location is relative to the launch directory.
+`std::filesystem`; the OBJ location is anchored to the launch directory before
+Irrlicht initializes, even if the visualization backend changes working directory.
+
+The GUI's live status panel refreshes every 0.1 simulated seconds and retains
+the final values when physics pauses. It shows time, forward travel and speed,
+lateral position and wheel centre height, angular speed, nominal slip, wheel
+sinkage, maximum sampled passed-centreline rut depth, SCM forces in world X/Y/Z,
+and signed motor torque. Wheel radius, width, mass, time step, and grid spacing
+are also displayed. These are read-only measurements; the physics is unchanged.
+The headless mode keeps its existing terminal summary.
+
+Wheel sinkage is `max(0, initial_ground_height + radius - wheel_centre_height)`;
+it is distinct from the ground's rut depth behind the wheel. Nominal driving
+slip is `100 * (1 - forward_speed / (radius * angular_speed))` percent and is
+shown as unavailable without SCM contact or with near-zero angular speed.
+Forces come from `SCMTerrain::GetContactForceBody`, representing the most recent
+physics-step evaluation; they are not drawbar-pull measurements. Motor torque
+uses Chrono's signed `GetMotorTorque()` convention without taking its absolute
+value. Rut sampling continues to use the fixed `Y=0` centreline.
 
 ## Verification record
 
